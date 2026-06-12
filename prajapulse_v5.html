@@ -1,0 +1,1737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PrajaPulse ಪ್ರಜಾ ಪಲ್ಸ್ — Bangalore Civic Intelligence</title>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<!-- Leaflet JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<!-- React + ReactDOM -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<!-- Babel for JSX -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
+
+  :root {
+    --green:       #1D9E75;
+    --green-light: #e6f7f2;
+    --green-dark:  #0f6b4f;
+    --green-mid:   #d0f0e6;
+    --amber:       #BA7517;
+    --amber-light: #fef3dc;
+    --red:         #C0392B;
+    --red-light:   #fdecea;
+    --blue:        #185FA5;
+    --blue-light:  #e8f0fa;
+    --coral:       #D85A30;
+    --coral-light: #fdf0eb;
+    --bg:          #F2F1ED;
+    --surface:     #FFFFFF;
+    --surface2:    #F8F7F4;
+    --border:      #E4E0D8;
+    --border-strong:#C8C4BC;
+    --text:        #17161A;
+    --text2:       #3D3B38;
+    --muted:       #7A776F;
+    --muted2:      #A09D96;
+    --nav-h:       58px;
+    --sidebar-w:   310px;
+    --alert-h:     0px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; -webkit-font-smoothing: antialiased; }
+  h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
+
+  /* ── NAV ── */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    height: var(--nav-h);
+    background: #0F0E0C;
+    display: flex; align-items: center; gap: 14px; padding: 0 18px;
+    border-bottom: 1px solid #222;
+  }
+  .nav-logo { display:flex; align-items:center; gap:9px; text-decoration:none; flex-shrink:0; }
+  .nav-logo-mark {
+    width:32px; height:32px; background:var(--green); border-radius:7px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .nav-logo-mark svg { color:#fff; }
+  .nav-logo-text h1 { color:#fff; font-size:16px; font-weight:800; letter-spacing:-0.4px; line-height:1; }
+  .nav-logo-text small { color:var(--green); font-size:9.5px; letter-spacing:1.2px; font-family:'DM Sans'; opacity:.9; }
+  .nav-divider { width:1px; height:22px; background:#2a2a2a; flex-shrink:0; }
+  .nav-search {
+    flex:1; max-width:440px; margin:0 auto;
+    position:relative;
+  }
+  .nav-search input {
+    width:100%; height:34px; border-radius:7px; border:1px solid #2a2a2a;
+    background:#161614; color:#e0ddd6; padding:0 12px 0 34px;
+    font-family:'DM Sans'; font-size:13px; outline:none;
+    transition: border-color .18s, background .18s;
+  }
+  .nav-search input::placeholder { color:#4a4845; }
+  .nav-search input:focus { border-color:var(--green); background:#0f0e0c; }
+  .nav-search .search-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#4a4845; }
+  .search-dropdown {
+    position:absolute; top:40px; left:0; right:0; background:var(--surface);
+    border:1px solid var(--border); border-radius:9px; overflow:hidden;
+    box-shadow:0 12px 32px rgba(0,0,0,.14); z-index:200;
+  }
+  .search-result-item {
+    padding:9px 14px; cursor:pointer; display:flex; align-items:center; gap:10px;
+    border-bottom:1px solid var(--border); transition:background .12s;
+  }
+  .search-result-item:last-child { border-bottom:none; }
+  .search-result-item:hover { background:var(--surface2); }
+  .nav-actions { display:flex; gap:7px; align-items:center; margin-left:auto; }
+  .btn {
+    display:inline-flex; align-items:center; gap:6px; padding:0 13px; height:32px;
+    border-radius:7px; font-size:12.5px; font-weight:500; cursor:pointer;
+    border:none; transition: all .15s; font-family:'DM Sans'; white-space:nowrap;
+  }
+  .btn-primary { background:var(--green); color:#fff; }
+  .btn-primary:hover { background:var(--green-dark); }
+  .btn-ghost { background:transparent; color:#aaa; border:1px solid #2a2a2a; }
+  .btn-ghost:hover { border-color:#555; color:#fff; background:#1a1a18; }
+  .nav-tab {
+    color:#666; font-size:12.5px; cursor:pointer; padding:4px 9px;
+    border-radius:6px; transition:all .15s; font-family:'DM Sans'; font-weight:500;
+  }
+  .nav-tab:hover { color:#ccc; background:#1c1c1a; }
+  .nav-tab.active { color:#fff; background:#222; }
+
+  /* ── ALERT BANNER ── */
+  .alert-banner {
+    position:fixed; top:var(--nav-h); left:0; right:0; z-index:900;
+    background:#E8940A; color:#1A0800; padding:9px 20px;
+    display:flex; align-items:center; gap:10px; font-size:13px; font-weight:500;
+    transform:translateY(-100%); transition:transform .28s ease; height:42px;
+  }
+  .alert-banner.visible { transform:translateY(0); --alert-h:42px; }
+  .alert-pulse { width:8px; height:8px; border-radius:50%; background:#C0392B; flex-shrink:0;
+    animation:pulse-dot 1.2s ease-in-out infinite; }
+  @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.5;transform:scale(1.5);} }
+  .alert-close { margin-left:auto; cursor:pointer; background:rgba(0,0,0,.12); border:none;
+    width:20px;height:20px;border-radius:50%; display:flex;align-items:center;justify-content:center; font-size:12px; }
+
+  /* ── MAIN LAYOUT ── */
+  .app-body {
+    display:flex; height:100vh;
+    padding-top: calc(var(--nav-h) + var(--alert-h));
+    transition: padding-top .28s;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width:var(--sidebar-w); flex-shrink:0; background:var(--surface);
+    border-right:1px solid var(--border); overflow-y:auto; display:flex; flex-direction:column;
+  }
+  .sidebar::-webkit-scrollbar { width:4px; }
+  .sidebar::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+
+  /* Stats top row */
+  .stats-row {
+    display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--border);
+    border-bottom:1px solid var(--border);
+  }
+  .stat-card { background:var(--surface); padding:13px 15px; }
+  .stat-num { font-family:'Syne'; font-size:24px; font-weight:800; line-height:1.1; }
+  .stat-label { font-size:10px; color:var(--muted2); margin-top:3px; text-transform:uppercase; letter-spacing:.6px; font-weight:600; }
+
+  .sidebar-section { padding:14px 16px; border-bottom:1px solid var(--border); }
+  .sidebar-title {
+    font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px;
+    color:var(--muted2); margin-bottom:10px; display:flex; align-items:center; gap:6px;
+  }
+
+  /* filter pills */
+  .filter-pills { display:flex; flex-wrap:wrap; gap:5px; }
+  .pill {
+    padding:3px 9px; border-radius:20px; font-size:11.5px; font-weight:500; cursor:pointer;
+    border:1px solid var(--border); background:var(--surface); color:var(--muted);
+    transition:all .14s;
+  }
+  .pill.active { border-color:currentColor; }
+  .pill-water.active  { color:var(--blue);  background:var(--blue-light);  border-color:var(--blue); }
+  .pill-roads.active  { color:var(--coral); background:var(--coral-light); border-color:var(--coral); }
+  .pill-power.active  { color:var(--amber); background:var(--amber-light); border-color:var(--amber); }
+  .pill-garbage.active{ color:#4A6B20;      background:#eef6e0;            border-color:#4A6B20; }
+  .pill-all.active    { color:var(--text);  background:var(--bg);          border-color:var(--border-strong); }
+  .pill-resolved.active { color:var(--green-dark); background:var(--green-light); border-color:var(--green); }
+
+  /* MLA cards */
+  .mla-card {
+    border:1px solid var(--border); border-radius:10px; padding:11px 13px; margin-bottom:7px;
+    cursor:pointer; transition:all .14s; background:var(--surface);
+  }
+  .mla-card:hover { border-color:var(--green); background:var(--green-light); }
+  .mla-header { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+  .mla-name { font-weight:700; font-size:13.5px; font-family:'Syne'; line-height:1.2; }
+  .mla-ward { font-size:11px; color:var(--muted); margin-top:2px; }
+  .score-chip {
+    font-family:'Syne'; font-weight:800; font-size:14px;
+    padding:3px 8px; border-radius:6px; flex-shrink:0;
+  }
+  .score-bar-wrap { margin-top:9px; height:4px; background:var(--bg); border-radius:3px; overflow:hidden; }
+  .score-bar { height:100%; border-radius:3px; transition:width .4s ease; }
+
+  /* live feed */
+  .feed-item {
+    display:flex; gap:9px; padding:9px 0; border-bottom:1px solid var(--border);
+    align-items:flex-start;
+  }
+  .feed-item:last-child { border-bottom:none; }
+  .feed-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; margin-top:5px; }
+  .feed-text { font-size:12px; line-height:1.45; color:var(--text2); }
+  .feed-meta { font-size:10.5px; color:var(--muted2); margin-top:3px; }
+  .cat-badge {
+    display:inline-block; padding:1px 6px; border-radius:8px; font-size:10px;
+    font-weight:700; text-transform:uppercase; letter-spacing:.4px;
+  }
+
+  /* ── MAP ── */
+  .map-area { flex:1; position:relative; }
+  #map { width:100%; height:100%; }
+
+  /* Cluster popup */
+  .cluster-label {
+    background:rgba(24,95,165,.9); color:#fff; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Syne'; font-weight:800; border:2px solid #fff;
+    box-shadow:0 2px 10px rgba(0,0,0,.25);
+  }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:2000;
+    display:flex; align-items:center; justify-content:center; padding:20px;
+    backdrop-filter:blur(4px);
+  }
+  .modal {
+    background:var(--surface); border-radius:16px; width:100%; max-width:500px;
+    max-height:90vh; overflow-y:auto; box-shadow:0 24px 64px rgba(0,0,0,.22);
+    border:1px solid var(--border);
+  }
+  .modal-header {
+    padding:18px 22px 14px; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .modal-title { font-family:'Syne'; font-size:17px; font-weight:800; }
+  .modal-body { padding:18px 22px; }
+  .modal-close { cursor:pointer; background:var(--bg); border:none; width:28px; height:28px;
+    border-radius:50%; display:flex;align-items:center;justify-content:center; font-size:14px; color:var(--muted); }
+  .modal-close:hover { background:var(--border); }
+
+  .cat-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:14px; }
+  .cat-btn {
+    padding:12px; border-radius:10px; border:1.5px solid var(--border); cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:5px; transition:all .14s;
+    font-family:'DM Sans'; font-size:12.5px; font-weight:500; background:var(--surface);
+    color:var(--text2);
+  }
+  .cat-btn:hover { border-color:var(--border-strong); background:var(--surface2); }
+  .cat-btn.selected-water  { border-color:var(--blue);  background:var(--blue-light);  color:var(--blue); }
+  .cat-btn.selected-roads  { border-color:var(--coral); background:var(--coral-light); color:var(--coral); }
+  .cat-btn.selected-power  { border-color:var(--amber); background:var(--amber-light); color:var(--amber); }
+  .cat-btn.selected-garbage{ border-color:#4A6B20;      background:#eef6e0;            color:#4A6B20; }
+
+  .form-group { margin-bottom:13px; }
+  .form-label { display:block; font-size:11px; font-weight:600; margin-bottom:4px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; }
+  .form-control {
+    width:100%; padding:9px 11px; border:1.5px solid var(--border); border-radius:8px;
+    font-family:'DM Sans'; font-size:13.5px; background:var(--surface); color:var(--text);
+    outline:none; transition:border-color .18s; resize:vertical;
+  }
+  .form-control:focus { border-color:var(--green); }
+  select.form-control { appearance:none; cursor:pointer; }
+
+  .ai-result {
+    background:var(--green-light); border:1px solid var(--green);
+    border-radius:8px; padding:11px; margin:10px 0; display:flex; gap:10px; align-items:center;
+  }
+  .ai-result-icon { font-size:18px; }
+  .ai-result-detail { font-size:12px; }
+  .ai-result-detail strong { display:block; font-size:12.5px; color:var(--green-dark); font-weight:700; }
+
+  .spinner {
+    display:inline-block; width:15px; height:15px; border:2px solid rgba(29,158,117,.25);
+    border-top-color:var(--green); border-radius:50%; animation:spin .65s linear infinite;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* ── WARD PAGE ── */
+  .ward-page {
+    position:fixed; inset:0; background:var(--bg); z-index:1500;
+    overflow-y:auto; padding-top:var(--nav-h);
+  }
+  .ward-page-inner { max-width:860px; margin:0 auto; padding:28px 22px 40px; }
+  .ward-badge {
+    display:inline-flex; align-items:center; gap:6px; background:var(--text); color:#fff;
+    padding:5px 12px; border-radius:7px; font-family:'Syne'; font-weight:700; font-size:12.5px;
+    margin-bottom:6px; letter-spacing:.2px;
+  }
+  .ward-name-h { font-family:'Syne'; font-size:32px; font-weight:800; line-height:1.05; margin-bottom:4px; }
+  .ward-pincode { color:var(--muted); font-size:13.5px; }
+
+  .mla-big-card {
+    background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px;
+    display:flex; gap:18px; align-items:center; margin:18px 0;
+  }
+  .score-circle {
+    width:76px; height:76px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Syne'; font-weight:800; font-size:24px;
+    border:3.5px solid currentColor;
+  }
+  .mla-big-info { flex:1; }
+  .mla-big-name { font-family:'Syne'; font-size:20px; font-weight:800; }
+  .mla-big-ward { color:var(--muted); font-size:12.5px; margin-top:2px; }
+  .mla-promises-count { font-size:12.5px; color:var(--green-dark); font-weight:600; margin-top:5px; }
+
+  .ward-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:9px; margin-bottom:18px; }
+  .ward-stat-card {
+    background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:13px;
+    text-align:center; transition:border-color .14s;
+  }
+  .ward-stat-num { font-family:'Syne'; font-size:26px; font-weight:800; line-height:1.1; }
+  .ward-stat-label { font-size:10px; color:var(--muted2); text-transform:uppercase; letter-spacing:.6px; margin-top:2px; font-weight:600; }
+
+  #ward-map { width:100%; height:240px; border-radius:12px; border:1px solid var(--border); margin-bottom:18px; }
+
+  .promises-list { background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:18px; }
+  .promise-item { padding:13px 16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); gap:12px; }
+  .promise-item:last-child { border-bottom:none; }
+  .promise-text { font-size:13.5px; flex:1; color:var(--text2); }
+  .status-badge { padding:3px 10px; border-radius:20px; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; flex-shrink:0; }
+  .done    { background:var(--green-light); color:var(--green-dark); }
+  .partial { background:var(--amber-light); color:var(--amber); }
+  .broken  { background:var(--red-light);   color:var(--red); }
+
+  /* ── WARDS PAGE ── */
+  .wards-page {
+    position:fixed; inset:0; background:var(--bg); z-index:1500;
+    overflow-y:auto; padding-top:var(--nav-h);
+  }
+  .wards-page-inner { max-width:900px; margin:0 auto; padding:28px 22px; }
+  .wards-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:18px; }
+  .ward-card {
+    background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:15px;
+    cursor:pointer; transition:all .14s;
+  }
+  .ward-card:hover { border-color:var(--green); box-shadow:0 4px 18px rgba(29,158,117,.08); transform:translateY(-1px); }
+  .ward-num-badge {
+    background:var(--bg); border-radius:5px; padding:2px 7px; font-size:10.5px;
+    font-weight:700; color:var(--muted2); display:inline-block; margin-bottom:5px; letter-spacing:.3px;
+  }
+  .ward-card-name { font-family:'Syne'; font-weight:800; font-size:15px; margin-bottom:3px; }
+  .ward-card-mla { font-size:11.5px; color:var(--muted); }
+  .ward-card-footer { margin-top:9px; display:flex; justify-content:space-between; align-items:center; }
+  .ward-card-pin { font-size:11px; color:var(--muted2); }
+
+  .api-key-banner {
+    background:var(--amber-light); border:1px solid var(--amber); border-radius:8px; padding:9px 13px;
+    font-size:12px; display:flex; gap:8px; align-items:center; margin-bottom:13px;
+  }
+
+  /* ── FAB ── */
+  .fab {
+    position:fixed; bottom:22px; right:22px; z-index:500;
+    width:50px; height:50px; border-radius:50%; background:var(--green); color:#fff;
+    border:none; cursor:pointer; font-size:24px; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 18px rgba(29,158,117,.38); transition:all .18s;
+  }
+  .fab:hover { background:var(--green-dark); transform:scale(1.06); }
+
+  /* Key input row */
+  .key-row { display:flex; gap:8px; margin-bottom:4px; }
+  .key-row input { flex:1; }
+  .key-row .btn { flex-shrink:0; background:var(--text); color:#fff; }
+
+  /* ── UPVOTE BUTTON ── */
+  .upvote-btn {
+    display:inline-flex; align-items:center; gap:4px; padding:2px 9px;
+    border-radius:20px; font-size:11px; font-weight:600; cursor:pointer;
+    border:1px solid var(--border); background:var(--surface2); color:var(--muted);
+    transition:all .14s; font-family:'DM Sans';
+  }
+  .upvote-btn:hover { border-color:var(--green); color:var(--green); background:var(--green-light); }
+  .upvote-btn.voted { border-color:var(--green); color:var(--green-dark); background:var(--green-light); }
+  .upvote-btn.voted:hover { border-color:var(--red); color:var(--red); background:var(--red-light); }
+
+  /* ── MLA RESPONSE LOG ── */
+  .response-log {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; overflow:hidden; margin-bottom:18px;
+  }
+  .response-item {
+    padding:12px 16px; border-bottom:1px solid var(--border); display:flex; gap:11px;
+  }
+  .response-item:last-child { border-bottom:none; }
+  .response-avatar {
+    width:30px; height:30px; border-radius:50%; background:var(--blue-light);
+    display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;
+    color:var(--blue); flex-shrink:0;
+  }
+  .response-body { flex:1; }
+  .response-author { font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; }
+  .official-badge { background:var(--blue-light); color:var(--blue); padding:1px 6px; border-radius:7px; font-size:9.5px; font-weight:700; letter-spacing:.3px; text-transform:uppercase; }
+  .response-text { font-size:12px; color:var(--muted); margin-top:3px; line-height:1.45; }
+  .response-time { font-size:10px; color:var(--muted2); margin-top:3px; }
+
+  /* ── WARD HEALTH LEGEND ── */
+  .map-legend {
+    position:absolute; bottom:20px; left:20px; z-index:400;
+    background:var(--surface); border:1px solid var(--border); border-radius:10px;
+    padding:10px 13px; font-size:11px; box-shadow:0 2px 14px rgba(0,0,0,.09);
+  }
+  .legend-title { font-weight:700; font-size:10px; text-transform:uppercase; letter-spacing:.8px; color:var(--muted2); margin-bottom:7px; }
+  .legend-row { display:flex; align-items:center; gap:7px; margin-bottom:4px; font-size:11.5px; color:var(--text2); }
+  .legend-row:last-child { margin-bottom:0; }
+  .legend-swatch { width:11px; height:11px; border-radius:3px; flex-shrink:0; opacity:.8; }
+
+  /* ── DISPUTED BADGE ── */
+  .disputed-badge {
+    background:#fff3e0; color:#c45500; border:1px solid #ffa040;
+    padding:1px 7px; border-radius:8px; font-size:10px; font-weight:700;
+    text-transform:uppercase; letter-spacing:.3px;
+  }
+
+  /* ── COMPLAINT DETAIL PANEL (slide-in from right) ── */
+  .complaint-panel {
+    position:fixed; top:var(--nav-h); right:0; bottom:0; width:380px; z-index:800;
+    background:var(--surface); border-left:1px solid var(--border);
+    overflow-y:auto; display:flex; flex-direction:column;
+    box-shadow:-8px 0 32px rgba(0,0,0,.1);
+    transform:translateX(100%); transition:transform .26s cubic-bezier(.4,0,.2,1);
+  }
+  .complaint-panel.open { transform:translateX(0); }
+  .complaint-panel::-webkit-scrollbar { width:3px; }
+  .complaint-panel::-webkit-scrollbar-thumb { background:var(--border); }
+
+  .cp-photo {
+    width:100%; aspect-ratio:16/9; object-fit:cover; background:var(--bg);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    font-size:40px; color:var(--border-strong); position:relative; overflow:hidden;
+  }
+  .cp-photo img { width:100%; height:100%; object-fit:cover; }
+  .cp-photo-placeholder { width:100%; aspect-ratio:16/9; background:linear-gradient(135deg,#eee 0%,#f5f5f5 100%); display:flex; align-items:center; justify-content:center; color:var(--border-strong); font-size:36px; }
+  .cp-severity {
+    position:absolute; top:10px; left:10px;
+    padding:3px 9px; border-radius:5px; font-size:10.5px; font-weight:700;
+    text-transform:uppercase; letter-spacing:.6px;
+  }
+  .sev-high   { background:#C0392B; color:#fff; }
+  .sev-medium { background:#BA7517; color:#fff; }
+  .sev-low    { background:#1D9E75; color:#fff; }
+
+  .cp-body { padding:16px; flex:1; }
+  .cp-title { font-family:'Syne'; font-size:16px; font-weight:800; line-height:1.3; margin-bottom:4px; }
+  .cp-location { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:4px; margin-bottom:12px; }
+
+  .cp-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; margin-bottom:14px; }
+  .cp-stat { background:var(--surface2); border:1px solid var(--border); border-radius:9px; padding:10px 8px; text-align:center; }
+  .cp-stat-num { font-family:'Syne'; font-size:18px; font-weight:800; line-height:1.1; }
+  .cp-stat-label { font-size:9.5px; color:var(--muted2); text-transform:uppercase; letter-spacing:.6px; margin-top:2px; font-weight:600; }
+
+  /* Authority chain */
+  .auth-section { margin-bottom:14px; }
+  .auth-label { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.9px; color:var(--muted2); margin-bottom:10px; }
+  .auth-chain { display:flex; flex-direction:column; align-items:center; gap:0; }
+  .auth-ward-pill {
+    background:var(--red-light); border:1.5px solid var(--red); border-radius:20px;
+    padding:5px 14px; font-size:12px; font-weight:700; color:var(--red); margin-bottom:0;
+  }
+  .auth-connector { width:1px; height:14px; background:var(--border-strong); margin:0; }
+  .auth-fork { display:flex; gap:14px; width:100%; justify-content:center; margin-bottom:0; }
+  .auth-node {
+    display:flex; flex-direction:column; align-items:center; gap:3px; flex:1; max-width:120px;
+  }
+  .auth-avatar {
+    width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700; font-family:'Syne'; flex-shrink:0;
+  }
+  .auth-node-name { font-size:11px; font-weight:700; text-align:center; line-height:1.2; }
+  .auth-node-role { font-size:9.5px; color:var(--muted2); text-align:center; }
+  .auth-vacant { color:var(--amber); font-size:9.5px; font-weight:600; text-align:center; }
+  .auth-line-wrap { display:flex; justify-content:center; }
+
+  .auth-rep-section { margin-top:10px; padding-top:10px; border-top:1px dashed var(--border); }
+  .auth-rep-label { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.9px; color:var(--muted2); margin-bottom:8px; text-align:center; }
+  .auth-reps { display:flex; gap:10px; justify-content:center; }
+  .auth-rep-card {
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:10px;
+    flex:1; cursor:pointer; transition:all .14s;
+  }
+  .auth-rep-card:hover { border-color:var(--green); }
+  .auth-rep-avatar {
+    width:44px; height:44px; border-radius:50%; background:var(--border);
+    display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700;
+    font-family:'Syne'; color:var(--text2); overflow:hidden; flex-shrink:0;
+  }
+  .auth-rep-name { font-size:11.5px; font-weight:700; text-align:center; line-height:1.2; font-family:'Syne'; }
+  .auth-rep-party { font-size:10px; font-weight:700; padding:1px 6px; border-radius:5px; margin-top:1px; }
+  .party-bjp  { background:#FF6B35; color:#fff; }
+  .party-inc  { background:#4CAF50; color:#fff; }
+  .party-jds  { background:#9C27B0; color:#fff; }
+  .party-aap  { background:#2196F3; color:#fff; }
+  .party-ind  { background:#607D8B; color:#fff; }
+  .auth-rep-role { font-size:9.5px; color:var(--muted2); }
+
+  /* Action buttons */
+  .cp-actions { padding:14px 16px; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:7px; flex-shrink:0; }
+  .btn-wa {
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    height:42px; border-radius:10px; font-size:13.5px; font-weight:600;
+    background:#25D366; color:#fff; border:none; cursor:pointer;
+    text-decoration:none; font-family:'DM Sans'; transition:background .14s;
+  }
+  .btn-wa:hover { background:#1ebe5d; }
+  .btn-verify {
+    display:flex; align-items:center; justify-content:center; gap:7px;
+    height:40px; border-radius:10px; font-size:13px; font-weight:500;
+    background:var(--surface); color:var(--text2); border:1px solid var(--border);
+    cursor:pointer; font-family:'DM Sans'; transition:all .14s;
+  }
+  .btn-verify:hover { border-color:var(--green); color:var(--green); }
+  .cp-anon { font-size:10px; color:var(--muted2); text-align:center; display:flex; align-items:center; justify-content:center; gap:4px; }
+
+  /* ── PHOTO UPLOAD in modal ── */
+  .photo-drop {
+    border:1.5px dashed var(--border); border-radius:10px; padding:18px;
+    text-align:center; cursor:pointer; transition:all .14s; background:var(--surface2);
+    position:relative;
+  }
+  .photo-drop:hover { border-color:var(--green); background:var(--green-light); }
+  .photo-drop input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+  .photo-drop-icon { font-size:24px; margin-bottom:4px; }
+  .photo-drop-text { font-size:12.5px; color:var(--muted); }
+  .photo-preview { width:100%; height:120px; object-fit:cover; border-radius:8px; margin-top:8px; }
+
+  /* ── STYLED MAP CLUSTERS ── */
+  .pp-cluster {
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-family:'Syne'; font-weight:800; color:#fff; border:3px solid rgba(255,255,255,.7);
+    box-shadow:0 3px 12px rgba(0,0,0,.28);
+  }
+
+  /* ── WHY PRAJAPULSE (bottom of sidebar) ── */
+  .why-panel {
+    margin-top:auto; padding:14px 16px;
+    border-top:1px solid var(--border);
+    background:var(--surface2);
+  }
+  .why-panel-title {
+    font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:1.1px;
+    color:var(--muted2); margin-bottom:8px;
+  }
+  .why-row {
+    display:flex; align-items:flex-start; gap:7px; font-size:11px;
+    color:var(--muted); margin-bottom:4px; line-height:1.4;
+  }
+  .why-check { color:var(--green); font-weight:800; font-size:11px; flex-shrink:0; margin-top:1px; }
+  .tagline {
+    font-size:10px; color:var(--muted2); margin-top:10px;
+    font-style:italic; letter-spacing:.3px;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ─────────────── DATA ───────────────
+const WARDS = [
+  { ward_number:87,  ward_name:"Koramangala",   pincode:"560034", mla:"Rizwan Arshad",  score:41, lat:12.9352, lng:77.6245, color:"amber" },
+  { ward_number:155, ward_name:"Jayanagar",      pincode:"560017", mla:"Sowmya Reddy",   score:74, lat:12.9299, lng:77.5838, color:"green" },
+  { ward_number:69,  ward_name:"Vasanth Nagar",  pincode:"560052", mla:"N A Harris",     score:28, lat:12.9822, lng:77.5924, color:"red"   },
+  { ward_number:24,  ward_name:"Hebbal",          pincode:"560024", mla:"K J George",     score:55, lat:13.0350, lng:77.5970, color:"amber" },
+  { ward_number:61,  ward_name:"Marathahalli",    pincode:"560037", mla:"S T Somashekhar",score:62, lat:12.9591, lng:77.6972, color:"amber" },
+  { ward_number:66,  ward_name:"Malleswaram",     pincode:"560003", mla:"Ashwini Kumar",  score:68, lat:13.0030, lng:77.5694, color:"green" },
+];
+
+const MLA_DATA = {
+  87: {
+    promises:[
+      {text:"24/7 water supply to all wards",            status:"broken"},
+      {text:"Fix all potholes within 30 days of monsoon",status:"partial"},
+      {text:"New streetlights on 10 main roads",         status:"done"},
+      {text:"Free WiFi in 5 public parks",               status:"broken"},
+      {text:"Upgrade 3 government schools",              status:"done"},
+    ]
+  },
+  155:{
+    promises:[
+      {text:"Zero open garbage dumps",          status:"done"},
+      {text:"Road resurfacing before monsoon 2025",status:"done"},
+      {text:"24/7 water supply",               status:"partial"},
+      {text:"CCTV on all main roads",          status:"done"},
+      {text:"Clean Jayanagar lake initiative", status:"partial"},
+    ]
+  },
+  69:{
+    promises:[
+      {text:"Road repair within 48 hours of complaint",status:"broken"},
+      {text:"New drainage system by 2024",             status:"broken"},
+      {text:"Power backup for hospitals",              status:"done"},
+      {text:"24/7 water supply",                       status:"broken"},
+      {text:"500 new trees planted",                   status:"partial"},
+    ]
+  },
+  24:  {promises:[{text:"Upgrade Hebbal flyover exits",status:"partial"},{text:"Park rejuvenation",status:"done"},{text:"Water kiosks",status:"done"}]},
+  61:  {promises:[{text:"Whitefield-Marathahalli road fix",status:"done"},{text:"Storm drain upgrade",status:"partial"},{text:"Street vendor zones",status:"partial"}]},
+  66:  {promises:[{text:"Malleswaram market renovation",status:"done"},{text:"Footpaths for pedestrians",status:"done"},{text:"24/7 water supply",status:"partial"}]},
+};
+
+// Seed 30 complaints
+const SEED_COMPLAINTS = [
+  {id:1,text:"Yaar 3 din se paani nahi, BWSSB helpline always busy",category:"water",urgency:"high",ward_number:87,ward_name:"Koramangala",pincode:"560034",lat:12.9332,lng:77.6221,status:"open",timestamp:"2026-04-23T09:23:00",mla:"Rizwan Arshad",upvotes:12,verified:false},
+  {id:2,text:"No water since 2 days, borewell down, 5th block Koramangala",category:"water",urgency:"high",ward_number:87,ward_name:"Koramangala",pincode:"560034",lat:12.9338,lng:77.6228,status:"open",timestamp:"2026-04-23T11:00:00",mla:"Rizwan Arshad",upvotes:8,verified:false},
+  {id:3,text:"BWSSB pipe burst near Koramangala 80 feet road, water logging",category:"water",urgency:"high",ward_number:87,ward_name:"Koramangala",pincode:"560034",lat:12.9345,lng:77.6234,status:"open",timestamp:"2026-04-24T08:15:00",mla:"Rizwan Arshad",upvotes:18,verified:true},
+  {id:4,text:"Water supply irregular since Ugadi, no response from BWSSB",category:"water",urgency:"medium",ward_number:87,ward_name:"Koramangala",pincode:"560034",lat:12.9355,lng:77.6242,status:"open",timestamp:"2026-04-22T14:00:00",mla:"Rizwan Arshad",upvotes:6,verified:false},
+  {id:5,text:"Overhead tank overflow wasting water, no one to fix",category:"water",urgency:"low",ward_number:87,ward_name:"Koramangala",pincode:"560034",lat:12.9348,lng:77.6248,status:"in_progress",timestamp:"2026-04-23T07:30:00",mla:"Rizwan Arshad",upvotes:3,verified:false},
+  {id:6,text:"No water for 4 days in Koramangala layout, 47 families affected",category:"water",urgency:"high",ward_number:87,ward_name:"Koramangala",pincode:"560034",lat:12.9341,lng:77.6231,status:"open",timestamp:"2026-04-24T06:00:00",mla:"Rizwan Arshad",upvotes:22,verified:true},
+  {id:7,text:"Massive pothole on Hosur Road near Silk Board, almost fell off bike yesterday",category:"roads",urgency:"high",ward_number:155,ward_name:"Jayanagar",pincode:"560017",lat:12.9249,lng:77.5870,status:"open",timestamp:"2026-04-22T16:45:00",mla:"Sowmya Reddy",upvotes:15,verified:false},
+  {id:8,text:"Entire stretch of 30th Cross, Jayanagar needs resurfacing. Monsoon approaching!",category:"roads",urgency:"medium",ward_number:155,ward_name:"Jayanagar",pincode:"560017",lat:12.9310,lng:77.5820,status:"in_progress",timestamp:"2026-04-21T10:00:00",mla:"Sowmya Reddy",upvotes:9,verified:false},
+  {id:9,text:"Road dug up for pipeline, not filled back. 3 weeks and counting.",category:"roads",urgency:"high",ward_number:69,ward_name:"Vasanth Nagar",pincode:"560052",lat:12.9800,lng:77.5910,status:"open",timestamp:"2026-04-20T09:00:00",mla:"N A Harris",upvotes:17,verified:true},
+  {id:10,text:"Power cut every evening 7-9pm for past week, BESCOM says no scheduled maintenance",category:"power",urgency:"high",ward_number:87,ward_name:"Koramangala",pincode:"560034",lat:12.9370,lng:77.6260,status:"open",timestamp:"2026-04-23T19:00:00",mla:"Rizwan Arshad",upvotes:25,verified:false},
+  {id:11,text:"Transformer blast sound, no power since morning. Koramangala 6th block",category:"power",urgency:"high",ward_number:87,ward_name:"Koramangala",pincode:"560034",lat:12.9362,lng:77.6255,status:"in_progress",timestamp:"2026-04-24T07:45:00",mla:"Rizwan Arshad",upvotes:14,verified:true},
+  {id:12,text:"Garbage not picked since 5 days, whole street is smelling badly",category:"garbage",urgency:"high",ward_number:69,ward_name:"Vasanth Nagar",pincode:"560052",lat:12.9830,lng:77.5930,status:"open",timestamp:"2026-04-19T12:00:00",mla:"N A Harris",upvotes:20,verified:false},
+  {id:13,text:"STP overflow smell near MG Road exit. Please send BBMP immediately",category:"garbage",urgency:"high",ward_number:66,ward_name:"Malleswaram",pincode:"560003",lat:13.0015,lng:77.5700,status:"open",timestamp:"2026-04-23T08:30:00",mla:"Ashwini Kumar",upvotes:11,verified:false},
+  {id:14,text:"Borewell fixed finally! Water supply restored in our area",category:"water",urgency:"low",ward_number:155,ward_name:"Jayanagar",pincode:"560017",lat:12.9290,lng:77.5830,status:"resolved",timestamp:"2026-04-20T16:00:00",mla:"Sowmya Reddy",upvotes:5,verified:true},
+  {id:15,text:"BBMP came and filled the pothole. Fast response this time.",category:"roads",urgency:"low",ward_number:66,ward_name:"Malleswaram",pincode:"560003",lat:13.0040,lng:77.5690,status:"resolved",timestamp:"2026-04-21T11:00:00",mla:"Ashwini Kumar",upvotes:8,verified:true},
+  {id:16,text:"Hebbal flyover approach road has sinkhole forming, dangerous!",category:"roads",urgency:"high",ward_number:24,ward_name:"Hebbal",pincode:"560024",lat:13.0360,lng:77.5960,status:"open",timestamp:"2026-04-22T13:30:00",mla:"K J George",upvotes:19,verified:false},
+  {id:17,text:"Low voltage problem — fans not running, fridge stopped working",category:"power",urgency:"medium",ward_number:24,ward_name:"Hebbal",pincode:"560024",lat:13.0340,lng:77.5980,status:"open",timestamp:"2026-04-23T20:00:00",mla:"K J George",upvotes:7,verified:false},
+  {id:18,text:"Waterlogging on Marathahalli bridge approach, buses not passing",category:"roads",urgency:"high",ward_number:61,ward_name:"Marathahalli",pincode:"560037",lat:12.9580,lng:77.6980,status:"open",timestamp:"2026-04-24T07:00:00",mla:"S T Somashekhar",upvotes:21,verified:false},
+  {id:19,text:"BESCOM has been doing maintenance without notice. 8hr power cut",category:"power",urgency:"medium",ward_number:61,ward_name:"Marathahalli",pincode:"560037",lat:12.9600,lng:77.6965,status:"disputed",timestamp:"2026-04-23T06:00:00",mla:"S T Somashekhar",upvotes:4,verified:false},
+  {id:20,text:"Open drain overflow, sewage on main road. Malleswaram 8th cross",category:"garbage",urgency:"high",ward_number:66,ward_name:"Malleswaram",pincode:"560003",lat:13.0025,lng:77.5705,status:"open",timestamp:"2026-04-23T10:15:00",mla:"Ashwini Kumar",upvotes:16,verified:false},
+  {id:21,text:"Street dog menace near Vasanth Nagar bus stop, kids scared",category:"garbage",urgency:"medium",ward_number:69,ward_name:"Vasanth Nagar",pincode:"560052",lat:12.9810,lng:77.5920,status:"open",timestamp:"2026-04-22T08:00:00",mla:"N A Harris",upvotes:9,verified:false},
+  {id:22,text:"No power for 12 hours after heavy wind last night. Vasanth Nagar",category:"power",urgency:"high",ward_number:69,ward_name:"Vasanth Nagar",pincode:"560052",lat:12.9825,lng:77.5935,status:"open",timestamp:"2026-04-24T05:30:00",mla:"N A Harris",upvotes:13,verified:false},
+  {id:23,text:"Pothole on CMH Road has been there since 6 months. Marked but never fixed",category:"roads",urgency:"medium",ward_number:61,ward_name:"Marathahalli",pincode:"560037",lat:12.9572,lng:77.6960,status:"open",timestamp:"2026-04-18T14:00:00",mla:"S T Somashekhar",upvotes:11,verified:false},
+  {id:24,text:"Water supply restored after 5 days — BWSSB finally came",category:"water",urgency:"low",ward_number:24,ward_name:"Hebbal",pincode:"560024",lat:13.0355,lng:77.5975,status:"resolved",timestamp:"2026-04-22T17:00:00",mla:"K J George",upvotes:6,verified:true},
+  {id:25,text:"Power pole leaning dangerously after truck hit. Hebbal main road",category:"power",urgency:"high",ward_number:24,ward_name:"Hebbal",pincode:"560024",lat:13.0345,lng:77.5968,status:"in_progress",timestamp:"2026-04-24T09:00:00",mla:"K J George",upvotes:18,verified:true},
+  {id:26,text:"Underground drainage pipe burst near Jayanagar 4th block",category:"garbage",urgency:"high",ward_number:155,ward_name:"Jayanagar",pincode:"560017",lat:12.9285,lng:77.5845,status:"open",timestamp:"2026-04-23T13:00:00",mla:"Sowmya Reddy",upvotes:10,verified:false},
+  {id:27,text:"Illegal dumping ground near Hebbal lake approach. BBMP not acting",category:"garbage",urgency:"medium",ward_number:24,ward_name:"Hebbal",pincode:"560024",lat:13.0370,lng:77.5990,status:"open",timestamp:"2026-04-21T09:30:00",mla:"K J George",upvotes:7,verified:false},
+  {id:28,text:"Road completely broken after BWSSB dug for pipeline. Malleswaram",category:"roads",urgency:"high",ward_number:66,ward_name:"Malleswaram",pincode:"560003",lat:13.0020,lng:77.5698,status:"open",timestamp:"2026-04-22T11:00:00",mla:"Ashwini Kumar",upvotes:14,verified:false},
+  {id:29,text:"Streetlight not working for 2 weeks near Marathahalli junction. Unsafe at night",category:"power",urgency:"medium",ward_number:61,ward_name:"Marathahalli",pincode:"560037",lat:12.9588,lng:77.6975,status:"open",timestamp:"2026-04-20T21:00:00",mla:"S T Somashekhar",upvotes:8,verified:false},
+  {id:30,text:"Complaint marked resolved but issue not fixed! BBMP lying. Vasanth Nagar",category:"roads",urgency:"high",ward_number:69,ward_name:"Vasanth Nagar",pincode:"560052",lat:12.9815,lng:77.5915,status:"disputed",timestamp:"2026-04-23T15:30:00",mla:"N A Harris",upvotes:16,verified:false},
+];
+
+// ─── STORAGE (replaces Supabase) ───
+const STORAGE_KEY = "prajapulse_complaints_v1";
+const API_KEY_STORAGE = "prajapulse_anthropic_key";
+
+function loadComplaints() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e){}
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(SEED_COMPLAINTS));
+  return SEED_COMPLAINTS;
+}
+function saveComplaints(arr) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+}
+
+// ─── UTILS ───
+function haversineKm(lat1,lng1,lat2,lng2){
+  const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function detectClusters(complaints){
+  const recent = complaints.filter(c=>
+    (c.status==="open"||c.status==="in_progress") &&
+    (Date.now()-new Date(c.timestamp).getTime()) < 48*3600*1000
+  );
+  const groups = {};
+  recent.forEach(c=>{ (groups[c.category]||(groups[c.category]=[])).push(c); });
+  const clusters=[];
+  const authority={water:"BWSSB",roads:"BBMP",garbage:"BBMP",power:"BESCOM"};
+  Object.entries(groups).forEach(([cat,comps])=>{
+    if(comps.length<5) return;
+    const used=new Set();
+    comps.forEach((c,i)=>{
+      if(used.has(i)) return;
+      const members=[c];
+      comps.forEach((d,j)=>{
+        if(i===j||used.has(j)) return;
+        if(haversineKm(c.lat,c.lng,d.lat,d.lng)<=2){ members.push(d); used.add(j); }
+      });
+      used.add(i);
+      if(members.length>=5){
+        const avgLat=members.reduce((s,m)=>s+m.lat,0)/members.length;
+        const avgLng=members.reduce((s,m)=>s+m.lng,0)/members.length;
+        const ward=members[0].ward_name;
+        clusters.push({
+          category:cat, count:members.length,
+          center_lat:avgLat, center_lng:avgLng,
+          complaint_ids:members.map(m=>m.id),
+          authority:authority[cat]||"BBMP",
+          alert_message:`${members.length} ${cat} complaints in ${ward} in 48h — ${authority[cat]||"BBMP"} auto-notified`,
+        });
+      }
+    });
+  });
+  return clusters;
+}
+function scoreColor(s){ return s>=71?"green":s>=41?"amber":"red"; }
+function scoreHex(s){ return s>=71?"#1D9E75":s>=41?"#BA7517":"#C0392B"; }
+function catColor(cat){ return {water:"#185FA5",roads:"#D85A30",power:"#BA7517",garbage:"#5C7A2D",resolved:"#1D9E75"}[cat]||"#888"; }
+function catBg(cat){ return {water:"#e8f0fa",roads:"#fdf0eb",power:"#fef3dc",garbage:"#f0f7e6",resolved:"#e6f7f2"}[cat]||"#f0f0f0"; }
+function catIcon(cat){ return {water:"💧",roads:"🚧",power:"⚡",garbage:"🗑️"}[cat]||"📍"; }
+function timeAgo(ts){
+  const s=(Date.now()-new Date(ts).getTime())/1000;
+  if(s<60) return "just now";
+  if(s<3600) return `${Math.floor(s/60)}m ago`;
+  if(s<86400) return `${Math.floor(s/3600)}h ago`;
+  return `${Math.floor(s/86400)}d ago`;
+}
+function searchWards(q,wards){
+  if(!q||q.length<2) return [];
+  const ql=q.toLowerCase();
+  return wards.filter(w=>
+    String(w.ward_number)===q ||
+    w.pincode===q ||
+    w.ward_name.toLowerCase().includes(ql) ||
+    w.mla.toLowerCase().includes(ql)
+  ).slice(0,5);
+}
+
+// ─── CLAUDE API CLASSIFIER ───
+async function classifyComplaint(text, apiKey){
+  if(!apiKey) return {category:"other",urgency:"medium",ward_hint:null,language:"english"};
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-20250514",
+        max_tokens:150,
+        system:`You are a Bangalore civic complaint classifier. Respond ONLY with a valid JSON object — no markdown, no explanation:
+{"category":"water"|"roads"|"power"|"garbage"|"other","urgency":"low"|"medium"|"high","ward_hint":"ward name or null","language":"english"|"kannada"|"hinglish"}`,
+        messages:[{role:"user",content:text}]
+      })
+    });
+    const data=await res.json();
+    const txt=data.content?.[0]?.text||"{}";
+    return JSON.parse(txt.replace(/```json|```/g,"").trim());
+  }catch(e){
+    return {category:"other",urgency:"medium",ward_hint:null,language:"english"};
+  }
+}
+
+// ── AUTHORITY CHAIN DATA ──
+const WARD_AUTHORITY = {
+  87: {
+    bbmpAuthority:"BBMP East Zone",
+    garbageAuthority:"BBMP SWM East",
+    corporator:"Vacant",
+    corporatorVacant:true,
+    zonalCommissioner:"Smt. Rekha Shetty IAS · East Zone",
+    zcInitials:"RS",
+    fieldOfficer:"JHI & AEE East",
+    mlaName:"Rizwan Arshad", mlaParty:"INC", mlaInitials:"RA", mlaRole:"MLA",
+    mpName:"Tejasvi Surya",  mpParty:"BJP",  mpInitials:"TS", mpRole:"MP · Bangalore South",
+    whatsapp:"919448197197",
+  },
+  155: {
+    bbmpAuthority:"BBMP South Zone",
+    garbageAuthority:"BBMP SWM South",
+    corporator:"Smt. Vijayalakshmi",
+    corporatorVacant:false,
+    corporatorInitials:"VL",
+    zonalCommissioner:"Sri. Anand Rao IAS · South Zone",
+    zcInitials:"AR",
+    fieldOfficer:"JHI & AEE South",
+    mlaName:"Sowmya Reddy", mlaParty:"INC", mlaInitials:"SR", mlaRole:"MLA",
+    mpName:"Tejasvi Surya", mpParty:"BJP", mpInitials:"TS", mpRole:"MP · Bangalore South",
+    whatsapp:"919448197197",
+  },
+  69: {
+    bbmpAuthority:"BBMP Central Zone",
+    garbageAuthority:"BSWML Central",
+    corporator:"Vacant",
+    corporatorVacant:true,
+    zonalCommissioner:"Sri. Suresh Kumar IAS · Central Zone",
+    zcInitials:"SK",
+    fieldOfficer:"JHI & AEE Central",
+    mlaName:"N A Harris", mlaParty:"INC", mlaInitials:"NH", mlaRole:"MLA",
+    mpName:"P C Mohan",   mpParty:"BJP", mpInitials:"PM", mpRole:"MP · Bangalore Central",
+    whatsapp:"919448197197",
+  },
+  24: {
+    bbmpAuthority:"BBMP North Zone",
+    garbageAuthority:"BBMP SWM North",
+    corporator:"Sri. Jayaram",
+    corporatorVacant:false,
+    corporatorInitials:"JR",
+    zonalCommissioner:"Sri. Anil Kumar IAS · North Zone",
+    zcInitials:"AK",
+    fieldOfficer:"JHI & AEE North",
+    mlaName:"K J George", mlaParty:"INC", mlaInitials:"KG", mlaRole:"MLA",
+    mpName:"D K Suresh",  mpParty:"INC", mpInitials:"DS", mpRole:"MP · Bangalore Rural",
+    whatsapp:"919448197197",
+  },
+  61: {
+    bbmpAuthority:"BBMP Mahadevapura Zone",
+    garbageAuthority:"BBMP SWM Mahadevapura",
+    corporator:"Smt. Rekha Rao",
+    corporatorVacant:false,
+    corporatorInitials:"RR",
+    zonalCommissioner:"Sri. Vijay Nair IAS · Mahadevapura Zone",
+    zcInitials:"VN",
+    fieldOfficer:"JHI & AEE Mahadevapura",
+    mlaName:"S T Somashekhar", mlaParty:"BJP", mlaInitials:"SS", mlaRole:"MLA",
+    mpName:"Tejasvi Surya",    mpParty:"BJP", mpInitials:"TS", mpRole:"MP · Bangalore South",
+    whatsapp:"919448197197",
+  },
+  66: {
+    bbmpAuthority:"BBMP West Zone",
+    garbageAuthority:"BBMP SWM West",
+    corporator:"Sri. Nagaraj",
+    corporatorVacant:false,
+    corporatorInitials:"NR",
+    zonalCommissioner:"Sri. Ravi Shankar IAS · West Zone",
+    zcInitials:"RV",
+    fieldOfficer:"JHI & AEE West",
+    mlaName:"Ashwini Kumar", mlaParty:"BJP", mlaInitials:"AK", mlaRole:"MLA",
+    mpName:"P C Mohan",      mpParty:"BJP", mpInitials:"PM", mpRole:"MP · Bangalore Central",
+    whatsapp:"919448197197",
+  },
+};
+
+function partyClass(p){ return "party-"+p.toLowerCase(); }
+
+
+function useLeafletMap(containerId, center, zoom, complaints, filter, onSelectComplaint){
+  const mapRef=useRef(null);
+  const markersRef=useRef([]);
+  const clusterLayersRef=useRef([]);
+  const onSelectRef=useRef(onSelectComplaint);
+  useEffect(()=>{ onSelectRef.current=onSelectComplaint; },[onSelectComplaint]);
+
+  useEffect(()=>{
+    if(mapRef.current) return;
+    mapRef.current=L.map(containerId,{zoomControl:false}).setView(center,zoom);
+    // CartoDB Positron — clean, light, modern
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{
+      attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains:'abcd', maxZoom:19
+    }).addTo(mapRef.current);
+    // Custom zoom control bottom-right
+    L.control.zoom({position:"bottomright"}).addTo(mapRef.current);
+    // Ward health score circles (drawn once on init)
+    WARDS.forEach(w=>{
+      const col=scoreHex(w.score);
+      const fillOp=w.score>=71?0.06:w.score>=41?0.09:0.13;
+      L.circle([w.lat,w.lng],{
+        radius:1100, fillColor:col, color:col, weight:1.5, fillOpacity:fillOp, dashArray:"5 4",
+        interactive:true
+      }).bindTooltip(
+        `<div style="font-family:'DM Sans',sans-serif;font-size:12px;min-width:160px;padding:2px 0">
+          <strong style="font-size:13px">${w.ward_name}</strong><br/>
+          MLA: ${w.mla}<br/>
+          <span style="color:${col};font-weight:700">Score: ${w.score}/100</span>
+        </div>`,{sticky:true, className:"pp-tooltip"}
+      ).addTo(mapRef.current);
+    });
+  },[]);
+
+  useEffect(()=>{
+    if(!mapRef.current) return;
+    markersRef.current.forEach(m=>m.remove());
+    clusterLayersRef.current.forEach(m=>m.remove());
+    markersRef.current=[];
+    clusterLayersRef.current=[];
+
+    const visible=filter==="all"?complaints:complaints.filter(c=>
+      filter==="resolved"?c.status==="resolved":c.category===filter
+    );
+
+    visible.forEach(c=>{
+      const col=c.status==="resolved"?"#1D9E75":catColor(c.category);
+      const urgencySize=c.urgency==="high"?10:c.urgency==="medium"?8:6;
+      const marker=L.circleMarker([c.lat,c.lng],{
+        radius:urgencySize, fillColor:col, color:"#fff", weight:2, fillOpacity:.95
+      });
+      marker.on("click",()=>{ if(onSelectRef.current) onSelectRef.current(c); });
+      marker.addTo(mapRef.current);
+      markersRef.current.push(marker);
+    });
+
+    // Draw clusters as large bold numbered circles (NammaKasa style)
+    const clusters=detectClusters(complaints);
+    clusters.forEach(cl=>{
+      const size=Math.min(72, 36 + cl.count * 2);
+      const fontSize=cl.count>99?14:cl.count>9?16:18;
+      const clusterIcon=L.divIcon({
+        html:`<div class="pp-cluster" style="width:${size}px;height:${size}px;font-size:${fontSize}px;background:#5C1A1A;border-color:rgba(255,255,255,.65);">${cl.count}</div>`,
+        iconSize:[size,size], iconAnchor:[size/2,size/2], className:""
+      });
+      const clusterMarker=L.marker([cl.center_lat,cl.center_lng],{icon:clusterIcon})
+        .bindTooltip(`<b>${cl.count} ${cl.category} complaints</b><br>${cl.alert_message}`,{sticky:true})
+        .addTo(mapRef.current);
+      const ring=L.circle([cl.center_lat,cl.center_lng],{
+        radius:900, fillColor:"#5C1A1A", color:"#5C1A1A", weight:1, fillOpacity:.07
+      }).addTo(mapRef.current);
+      clusterLayersRef.current.push(clusterMarker,ring);
+    });
+  },[complaints,filter]);
+
+  return mapRef;
+}
+
+// ─── WARD MAP (smaller) ───
+function WardMap({complaints, center, zoom}){
+  const mapRef=useRef(null);
+  const instanceRef=useRef(null);
+  useEffect(()=>{
+    if(!mapRef.current) return;
+    if(instanceRef.current){ instanceRef.current.remove(); }
+    instanceRef.current=L.map(mapRef.current,{zoomControl:true}).setView(center,zoom);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:'© OpenStreetMap'}).addTo(instanceRef.current);
+    complaints.forEach(c=>{
+      const col=c.status==="resolved"?"#1D9E75":catColor(c.category);
+      L.circleMarker([c.lat,c.lng],{radius:7,fillColor:col,color:"#fff",weight:2,fillOpacity:.9})
+       .bindPopup(`<b>${c.category}</b><br>${c.text.substring(0,60)}...`).addTo(instanceRef.current);
+    });
+    return ()=>{ if(instanceRef.current){ instanceRef.current.remove(); instanceRef.current=null; } };
+  },[JSON.stringify(complaints)]);
+  return <div ref={mapRef} id="ward-map" />;
+}
+
+// ─── COMPLAINT DETAIL PANEL ───
+function ComplaintDetailPanel({complaint, onClose, onUpvote, votedIds}){
+  if(!complaint) return null;
+  const c=complaint;
+  const ward=WARDS.find(w=>w.ward_number===c.ward_number)||WARDS[0];
+  const auth=WARD_AUTHORITY[c.ward_number]||WARD_AUTHORITY[87];
+  const daysOpen=Math.floor((Date.now()-new Date(c.timestamp))/(1000*60*60*24));
+  const voted=(votedIds||[]).includes(c.id);
+
+  const waText=encodeURIComponent(
+    `${c.category.charAt(0).toUpperCase()+c.category.slice(1)} Complaint — Ward #${c.ward_number}, ${c.ward_name}\n`+
+    `Issue: ${c.text}\n`+
+    `Ward: #${c.ward_number} — ${c.ward_name}\n`+
+    `Urgency: ${c.urgency}\n`+
+    `GPS: https://maps.google.com/?q=${c.lat},${c.lng}\n`+
+    `Please arrange for resolution at the earliest.\nReported via PrajaPulse`
+  );
+
+  return (
+    <div className="complaint-panel open">
+      {/* Photo / header */}
+      <div style={{position:"relative"}}>
+        {c.photo
+          ? <div className="cp-photo"><img src={c.photo} alt="complaint"/></div>
+          : <div className="cp-photo-placeholder">{catIcon(c.category)}</div>
+        }
+        <div style={{position:"absolute",top:10,left:10,display:"flex",gap:6}}>
+          <span className={`cp-severity sev-${c.urgency}`}>{c.urgency}</span>
+          <span className={`cp-severity`} style={{background:c.status==="resolved"?"#1D9E75":c.status==="disputed"?"#c45500":"#555",color:"#fff"}}>
+            {c.status}
+          </span>
+        </div>
+        <button onClick={onClose} style={{
+          position:"absolute",top:10,right:10,width:28,height:28,borderRadius:"50%",
+          background:"rgba(0,0,0,.5)",border:"none",color:"#fff",cursor:"pointer",
+          display:"flex",alignItems:"center",justifyContent:"center",fontSize:14
+        }}>✕</button>
+      </div>
+
+      <div className="cp-body">
+        <div className="cp-title">{c.text}</div>
+        <div className="cp-location">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          {c.ward_name}, Bangalore — {c.pincode}
+        </div>
+
+        {/* Stats row */}
+        <div className="cp-stats">
+          <div className="cp-stat">
+            <div className="cp-stat-num">{c.upvotes}</div>
+            <div className="cp-stat-label">Reports</div>
+          </div>
+          <div className="cp-stat">
+            <div className="cp-stat-num" style={{color:daysOpen>7?"var(--red)":"var(--amber)"}}>{daysOpen}</div>
+            <div className="cp-stat-label">Days open</div>
+          </div>
+          <div className="cp-stat">
+            <div className="cp-stat-num" style={{fontSize:14}}>{catIcon(c.category)}</div>
+            <div className="cp-stat-label">{c.category}</div>
+          </div>
+        </div>
+
+        {/* Authority chain */}
+        <div className="auth-section">
+          <div className="auth-label">Accountability Chain</div>
+          <div className="auth-chain">
+            <div className="auth-ward-pill">Your Ward — #{c.ward_number} {c.ward_name}</div>
+            <div className="auth-connector"/>
+            <div className="auth-fork">
+              <div className="auth-node">
+                <div className="auth-avatar" style={{background:"#e8f0fa",color:"var(--blue)"}}>
+                  {auth.corporatorVacant?"⚠":auth.corporatorInitials||"CO"}
+                </div>
+                <div className="auth-node-name">{auth.corporatorVacant?"Corporator":auth.corporator}</div>
+                {auth.corporatorVacant
+                  ? <div className="auth-vacant">Vacant</div>
+                  : <div className="auth-node-role">Ward Corporator</div>
+                }
+              </div>
+              <div className="auth-node">
+                <div className="auth-avatar" style={{background:"#eef6e0",color:"#4A6B20"}}>🗑</div>
+                <div className="auth-node-name">{auth.garbageAuthority}</div>
+                <div className="auth-node-role">Garbage Authority</div>
+              </div>
+            </div>
+            <div className="auth-connector"/>
+            <div className="auth-node" style={{width:"100%",maxWidth:180}}>
+              <div className="auth-avatar" style={{background:"var(--blue-light)",color:"var(--blue)"}}>{auth.zcInitials}</div>
+              <div className="auth-node-name">Zonal Commissioner</div>
+              <div className="auth-node-role">{auth.zonalCommissioner}</div>
+            </div>
+            <div className="auth-connector"/>
+            <div className="auth-node" style={{width:"100%",maxWidth:180}}>
+              <div className="auth-avatar" style={{background:"var(--bg)",color:"var(--muted)"}}>JHI</div>
+              <div className="auth-node-name">{auth.fieldOfficer}</div>
+              <div className="auth-node-role">Ward field staff</div>
+            </div>
+
+            {/* Elected reps */}
+            <div className="auth-rep-section" style={{width:"100%"}}>
+              <div className="auth-rep-label">Elected Representatives for this Ward</div>
+              <div className="auth-reps">
+                <div className="auth-rep-card">
+                  <div className="auth-rep-avatar">{auth.mlaInitials}</div>
+                  <div className="auth-rep-name">{auth.mlaName}</div>
+                  <div className={`auth-rep-party ${partyClass(auth.mlaParty)}`}>{auth.mlaParty}</div>
+                  <div className="auth-rep-role">{auth.mlaRole}</div>
+                </div>
+                <div className="auth-rep-card">
+                  <div className="auth-rep-avatar">{auth.mpInitials}</div>
+                  <div className="auth-rep-name">{auth.mpName}</div>
+                  <div className={`auth-rep-party ${partyClass(auth.mpParty)}`}>{auth.mpParty}</div>
+                  <div className="auth-rep-role">{auth.mpRole}</div>
+                </div>
+              </div>
+              <div style={{fontSize:10,color:"var(--muted2)",textAlign:"center",marginTop:8}}>
+                Tap any card to view contact options
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{fontSize:11,color:"var(--muted2)",marginBottom:4}}>
+          Reported {timeAgo(c.timestamp)} · {c.upvotes} citizen(s) reported · {daysOpen}d unresolved
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="cp-actions">
+        <button className="upvote-btn" style={{alignSelf:"flex-start",marginBottom:4}} onClick={()=>onUpvote(c.id)}>
+          {voted?"▼ Remove vote":"▲ I've seen this"} &nbsp;{c.upvotes}
+        </button>
+        <a className="btn-wa" href={`https://api.whatsapp.com/send/?phone=${auth.whatsapp}&text=${waText}&type=phone_number&app_absent=0`} target="_blank" rel="noopener noreferrer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          File BBMP Complaint via WhatsApp
+        </a>
+        <button className="btn-verify">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12,8 12,12 14,14"/></svg>
+          It is Resolved — Verify
+        </button>
+        <div className="cp-anon">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          All reports are anonymous
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── COMPLAINT MODAL ───
+function ComplaintModal({onClose, onSubmit, apiKey}){
+  const [selCat,setSelCat]=useState("");
+  const [text,setText]=useState("");
+  const [ward,setWard]=useState("");
+  const [aiResult,setAiResult]=useState(null);
+  const [classifying,setClassifying]=useState(false);
+  const [submitted,setSubmitted]=useState(false);
+  const [photo,setPhoto]=useState(null); // base64 data URL
+
+  const cats=["water","roads","power","garbage"];
+
+  function handlePhoto(e){
+    const file=e.target.files?.[0];
+    if(!file) return;
+    const reader=new FileReader();
+    reader.onload=ev=>setPhoto(ev.target.result);
+    reader.readAsDataURL(file);
+  }
+
+  async function handleSubmit(){
+    if(!text.trim()) return;
+    setClassifying(true);
+    const res=await classifyComplaint(text,apiKey);
+    setAiResult(res);
+    setClassifying(false);
+
+    // pick ward from dropdown or AI hint
+    const selectedWard=WARDS.find(w=>String(w.ward_number)===ward) ||
+      WARDS.find(w=>w.ward_name.toLowerCase().includes((res.ward_hint||"").toLowerCase())) ||
+      WARDS[0];
+
+    const newC={
+      id:Date.now(),
+      text,
+      category:selCat||res.category||"other",
+      urgency:res.urgency||"medium",
+      ward_number:selectedWard.ward_number,
+      ward_name:selectedWard.ward_name,
+      pincode:selectedWard.pincode,
+      lat:selectedWard.lat+(Math.random()-.5)*.004,
+      lng:selectedWard.lng+(Math.random()-.5)*.004,
+      status:"open",
+      timestamp:new Date().toISOString(),
+      mla:selectedWard.mla,
+      upvotes:0,
+      verified:false,
+      photo:photo||null,
+    };
+    onSubmit(newC);
+    setSubmitted(true);
+  }
+
+  if(submitted) return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:400,textAlign:"center",padding:"40px 30px"}}>
+        <div style={{fontSize:48,marginBottom:16}}>✅</div>
+        <h2 style={{fontFamily:"Syne",marginBottom:8}}>Complaint Submitted!</h2>
+        <p style={{color:"var(--muted)",fontSize:14}}>Your complaint has been logged and will appear on the map shortly.</p>
+        {aiResult && <div className="ai-result" style={{textAlign:"left",marginTop:16}}>
+          <span className="ai-result-icon">🤖</span>
+          <div className="ai-result-detail">
+            <strong>AI Classification</strong>
+            Category: {aiResult.category} • Urgency: {aiResult.urgency}<br/>
+            Language: {aiResult.language}
+          </div>
+        </div>}
+        <button className="btn btn-primary" style={{marginTop:20}} onClick={onClose}>Close</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={e=>e.stopPropagation()}>
+        <div className="modal-header">
+          <span className="modal-title">Report an Issue</span>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          {!apiKey && <div className="api-key-banner">
+            ⚠️ No API key set — AI classification disabled. Set it in the top bar to enable.
+          </div>}
+          <div className="form-group">
+            <label className="form-label">Category</label>
+            <div className="cat-grid">
+              {cats.map(c=>(
+                <button key={c} className={`cat-btn ${selCat===c?`selected-${c}`:""}`} onClick={()=>setSelCat(c)}>
+                  <span style={{fontSize:22}}>{catIcon(c)}</span>
+                  {c.charAt(0).toUpperCase()+c.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Photo (optional)</label>
+            <div className="photo-drop">
+              <input type="file" accept="image/*" onChange={handlePhoto}/>
+              {photo
+                ? <img src={photo} className="photo-preview" alt="preview"/>
+                : <>
+                  <div className="photo-drop-icon">📷</div>
+                  <div className="photo-drop-text">Tap to upload a photo of the issue</div>
+                </>
+              }
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Describe the issue</label>
+            <textarea className="form-control" rows={4} value={text} onChange={e=>setText(e.target.value)}
+              placeholder="e.g. No water since 3 days, borewell not working near 5th block..."/>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Ward</label>
+            <select className="form-control" value={ward} onChange={e=>setWard(e.target.value)}>
+              <option value="">-- Select ward --</option>
+              {WARDS.map(w=><option key={w.ward_number} value={w.ward_number}>
+                Ward {w.ward_number} — {w.ward_name}
+              </option>)}
+            </select>
+          </div>
+
+          {aiResult && !classifying && <div className="ai-result">
+            <span className="ai-result-icon">🤖</span>
+            <div className="ai-result-detail">
+              <strong>AI says: {aiResult.category} — {aiResult.urgency} urgency</strong>
+              Ward hint: {aiResult.ward_hint||"none"} • Language: {aiResult.language}
+            </div>
+          </div>}
+
+          {classifying && <div style={{textAlign:"center",padding:"12px 0",color:"var(--muted)",fontSize:13}}>
+            <span className="spinner"/> &nbsp; Claude is classifying your complaint…
+          </div>}
+
+          <button className="btn btn-primary" style={{width:"100%",justifyContent:"center",height:44,fontSize:15}}
+            onClick={handleSubmit} disabled={classifying||!text.trim()}>
+            {classifying?"Classifying…":"Submit Complaint"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── MLA SCORE CARD (sidebar) ───
+function MLACard({ward, onClick}){
+  const s=ward.score;
+  const col=scoreHex(s);
+  return (
+    <div className="mla-card" onClick={()=>onClick(ward)}>
+      <div className="mla-header">
+        <div>
+          <div className="mla-name">{ward.mla}</div>
+          <div className="mla-ward">Ward {ward.ward_number} — {ward.ward_name}</div>
+        </div>
+        <div className="score-chip" style={{color:col,background:scoreColor(s)==="green"?"#e6f7f2":scoreColor(s)==="amber"?"#fef3dc":"#fdecea"}}>
+          {s}
+        </div>
+      </div>
+      <div className="score-bar-wrap">
+        <div className="score-bar" style={{width:`${s}%`,background:col}}/>
+      </div>
+    </div>
+  );
+}
+
+// ─── WARD PAGE ───
+const MLA_RESPONSES = {
+  87:[
+    {author:"Rizwan Arshad Office",avatar:"RA",text:"We have escalated the water shortage issue to BWSSB. Expecting resolution within 48 hours.",time:"2026-04-24T10:30:00"},
+  ],
+  155:[
+    {author:"Sowmya Reddy Office",avatar:"SR",text:"Road resurfacing work on 30th Cross has been scheduled for next week. Thank you for your patience.",time:"2026-04-23T14:00:00"},
+    {author:"Sowmya Reddy Office",avatar:"SR",text:"Jayanagar lake cleanup drive happening this Sunday. Volunteers welcome!",time:"2026-04-21T09:00:00"},
+  ],
+  69:[
+    {author:"N A Harris Office",avatar:"NA",text:"We are aware of the drainage issues. BBMP team has been deployed.",time:"2026-04-22T16:00:00"},
+  ],
+};
+
+function WardPage({ward, complaints, onBack, onReport, onUpvote, votedIds}){
+  const wardComps=complaints.filter(c=>c.ward_number===ward.ward_number);
+  const mlaData=MLA_DATA[ward.ward_number]||{promises:[]};
+  const responses=MLA_RESPONSES[ward.ward_number]||[];
+  const s=ward.score; const col=scoreHex(s);
+  const open=wardComps.filter(c=>c.status==="open").length;
+  const resolved=wardComps.filter(c=>c.status==="resolved").length;
+  const disputed=wardComps.filter(c=>c.status==="disputed").length;
+
+  const topCat=["water","roads","power","garbage"].reduce((best,cat)=>{
+    const n=wardComps.filter(c=>c.category===cat).length;
+    return n>(best.n||0)?{cat,n}:best;
+  },{}).cat||"roads";
+
+  return (
+    <div className="ward-page">
+      <div style={{position:"sticky",top:"var(--nav-h)",background:"var(--surface)",zIndex:10,padding:"12px 20px",borderBottom:"1.5px solid var(--border)",display:"flex",gap:12,alignItems:"center"}}>
+        <button className="btn btn-ghost" style={{color:"var(--text)",borderColor:"var(--border)"}} onClick={onBack}>← Back to Map</button>
+        <span style={{color:"var(--muted)",fontSize:13}}>Ward Explorer</span>
+      </div>
+      <div className="ward-page-inner">
+        <div className="ward-badge">Ward {ward.ward_number}</div>
+        <h1 className="ward-name-h">{ward.ward_name}</h1>
+        <div className="ward-pincode">📍 Pincode: {ward.pincode} &nbsp;·&nbsp; Top issue: {catIcon(topCat)} {topCat}</div>
+
+        <div className="mla-big-card">
+          <div className="score-circle" style={{color:col,borderColor:col}}>
+            {s}
+          </div>
+          <div className="mla-big-info">
+            <div className="mla-big-name">{ward.mla}</div>
+            <div className="mla-big-ward">MLA — {ward.ward_name} Assembly Constituency</div>
+            <div className="mla-promises-count">{mlaData.promises.length} manifesto promises tracked</div>
+            <div style={{marginTop:8}}>
+              <div className="score-bar-wrap" style={{height:8,borderRadius:4}}>
+                <div className="score-bar" style={{width:`${s}%`,background:col,borderRadius:4}}/>
+              </div>
+              <div style={{fontSize:11,color:"var(--muted)",marginTop:4}}>
+                {s}/100 — {s>=71?"Good Performance":s>=41?"Needs Improvement":"Poor Performance"}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="ward-stats">
+          <div className="ward-stat-card"><div className="ward-stat-num">{wardComps.length}</div><div className="ward-stat-label">Total</div></div>
+          <div className="ward-stat-card" style={{borderColor:"var(--red)"}}><div className="ward-stat-num" style={{color:"var(--red)"}}>{open}</div><div className="ward-stat-label">Open</div></div>
+          <div className="ward-stat-card" style={{borderColor:"var(--green)"}}><div className="ward-stat-num" style={{color:"var(--green)"}}>{resolved}</div><div className="ward-stat-label">Resolved</div></div>
+          <div className="ward-stat-card" style={{borderColor:"#e65100"}}><div className="ward-stat-num" style={{color:"#e65100"}}>{disputed}</div><div className="ward-stat-label">Disputed</div></div>
+        </div>
+
+        <WardMap complaints={wardComps} center={[ward.lat,ward.lng]} zoom={14}/>
+
+        <h3 style={{fontFamily:"Syne",marginBottom:10,fontSize:16}}>MLA Manifesto Promises</h3>
+        <div className="promises-list" style={{marginBottom:20}}>
+          {mlaData.promises.map((p,i)=>(
+            <div key={i} className="promise-item">
+              <span className="promise-text">{p.text}</span>
+              <span className={`status-badge ${p.status}`}>
+                {p.status==="done"?"✓ Done":p.status==="partial"?"~ Partial":"✗ Broken"}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <h3 style={{fontFamily:"Syne",marginBottom:10,fontSize:16}}>MLA Response Log</h3>
+        <div className="response-log" style={{marginBottom:20}}>
+          {responses.length===0 && (
+            <div style={{padding:"16px 18px",color:"var(--muted)",fontSize:13}}>
+              No official responses yet. <span style={{color:"var(--red)",fontWeight:600}}>MLA has not responded.</span>
+            </div>
+          )}
+          {responses.map((r,i)=>(
+            <div key={i} className="response-item">
+              <div className="response-avatar">{r.avatar}</div>
+              <div className="response-body">
+                <div className="response-author">{r.author} <span className="official-badge">Official</span></div>
+                <div className="response-text">{r.text}</div>
+                <div className="response-time">{timeAgo(r.time)}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <h3 style={{fontFamily:"Syne",marginBottom:10,fontSize:16}}>Recent Complaints</h3>
+        <div style={{background:"var(--surface)",border:"1.5px solid var(--border)",borderRadius:12,overflow:"hidden",marginBottom:24}}>
+          {wardComps.slice(0,8).map(c=>(
+            <div key={c.id} style={{padding:"12px 18px",borderBottom:"1px solid var(--border)",display:"flex",gap:12,alignItems:"flex-start"}}>
+              <span style={{fontSize:18}}>{catIcon(c.category)}</span>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:500}}>{c.text}</div>
+                <div style={{fontSize:11,color:"var(--muted)",marginTop:3,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
+                  <span>{timeAgo(c.timestamp)}</span>
+                  <span>·</span>
+                  <span style={{background:catBg(c.category),color:catColor(c.category),padding:"1px 6px",borderRadius:8,fontWeight:600}}>{c.category}</span>
+                  <span>·</span>
+                  <span style={{color:c.status==="resolved"?"var(--green)":c.status==="disputed"?"#e65100":"var(--muted)"}}>{c.status}</span>
+                  {c.status==="disputed" && <span className="disputed-badge">⚠ citizen dispute</span>}
+                  <button
+                    className={`upvote-btn ${(votedIds||[]).includes(c.id)?"voted":""}`}
+                    onClick={()=>onUpvote&&onUpvote(c.id)}
+                    title={(votedIds||[]).includes(c.id)?"Click to remove your vote":"Upvote this issue"}
+                    style={{marginLeft:"auto"}}
+                  >▲ {c.upvotes}</button>
+                </div>
+              </div>
+            </div>
+          ))}
+          {wardComps.length===0 && <div style={{padding:24,textAlign:"center",color:"var(--muted)"}}>No complaints in this ward yet.</div>}
+        </div>
+
+        <button className="btn btn-primary" style={{width:"100%",justifyContent:"center",height:44,fontSize:15}} onClick={()=>onReport(ward)}>
+          + Report Issue in {ward.ward_name}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── WARDS EXPLORER PAGE ───
+function WardsPage({complaints, onBack, onSelectWard}){
+  const [q,setQ]=useState("");
+  const filtered=q.length>=2?searchWards(q,WARDS):WARDS;
+  return (
+    <div className="wards-page">
+      <div style={{position:"sticky",top:"var(--nav-h)",background:"var(--surface)",zIndex:10,padding:"12px 20px",borderBottom:"1.5px solid var(--border)",display:"flex",gap:12,alignItems:"center"}}>
+        <button className="btn btn-ghost" style={{color:"var(--text)",borderColor:"var(--border)"}} onClick={onBack}>← Back to Map</button>
+      </div>
+      <div className="wards-page-inner">
+        <h1 style={{fontFamily:"Syne",fontSize:32,fontWeight:800,marginBottom:4}}>Ward Explorer</h1>
+        <p style={{color:"var(--muted)",marginBottom:20}}>All 243 BBMP wards — search by name, number, or pincode</p>
+        <input className="form-control" style={{maxWidth:400,marginBottom:4}} placeholder="Search ward, area, or pincode…"
+          value={q} onChange={e=>setQ(e.target.value)}/>
+        <div className="wards-grid">
+          {filtered.map(w=>{
+            const wComps=complaints.filter(c=>c.ward_number===w.ward_number);
+            return (
+              <div key={w.ward_number} className="ward-card" onClick={()=>onSelectWard(w)}>
+                <div className="ward-num-badge">Ward {w.ward_number}</div>
+                <div className="ward-card-name">{w.ward_name}</div>
+                <div className="ward-card-mla">{w.mla}</div>
+                <div className="ward-card-footer">
+                  <span className="ward-card-pin">📍 {w.pincode}</span>
+                  <span className="score-chip" style={{
+                    fontSize:13,padding:"2px 8px",borderRadius:6,
+                    color:scoreHex(w.score),
+                    background:scoreColor(w.score)==="green"?"#e6f7f2":scoreColor(w.score)==="amber"?"#fef3dc":"#fdecea"
+                  }}>{w.score}/100</span>
+                </div>
+                <div style={{marginTop:8,fontSize:11,color:"var(--muted)"}}>
+                  {wComps.length} complaints &nbsp;·&nbsp; {wComps.filter(c=>c.status==="open").length} open
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <p style={{marginTop:20,color:"var(--muted)",fontSize:12,textAlign:"center"}}>
+          Showing {filtered.length} demo wards · Full 243 wards in production version
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────── MAIN APP ───────────────
+function App(){
+  const [complaints,setComplaints]=useState(loadComplaints);
+  const [filter,setFilter]=useState("all");
+  const [searchQ,setSearchQ]=useState("");
+  const [searchResults,setSearchResults]=useState([]);
+  const [showModal,setShowModal]=useState(false);
+  const [page,setPage]=useState("map"); // map | ward | wards
+  const [selectedWard,setSelectedWard]=useState(null);
+  const [alertVisible,setAlertVisible]=useState(false);
+  const [alertText,setAlertText]=useState("");
+  const [apiKey,setApiKey]=useState(()=>localStorage.getItem(API_KEY_STORAGE)||"");
+  const [keyInput,setKeyInput]=useState("");
+  const [showKeyInput,setShowKeyInput]=useState(false);
+  const [votedIds,setVotedIds]=useState(()=>JSON.parse(localStorage.getItem("pp_votes")||"[]"));
+  const [showLegend,setShowLegend]=useState(true);
+  const [selectedComplaint,setSelectedComplaint]=useState(null);
+
+  function handleUpvote(id){
+    const alreadyVoted = votedIds.includes(id);
+    const updated = complaints.map(c =>
+      c.id===id ? {...c, upvotes: c.upvotes + (alreadyVoted ? -1 : 1)} : c
+    );
+    setComplaints(updated);
+    saveComplaints(updated);
+    const newVotes = alreadyVoted ? votedIds.filter(v=>v!==id) : [...votedIds, id];
+    setVotedIds(newVotes);
+    localStorage.setItem("pp_votes", JSON.stringify(newVotes));
+  }
+
+  const clusters=detectClusters(complaints);
+  useEffect(()=>{
+    if(clusters.length>0){
+      setAlertText("🚨 "+clusters[0].alert_message);
+      setAlertVisible(true);
+    }
+  },[complaints]);
+
+  // Leaflet map
+  const mapRef=useLeafletMap("map",[12.9716,77.5946],12,complaints,filter,setSelectedComplaint);
+
+  // Ward map click
+  useEffect(()=>{
+    if(!mapRef.current) return;
+    const handler=(e)=>{
+      // handled via popups
+    };
+    mapRef.current.on("click",handler);
+    return ()=>{ if(mapRef.current) mapRef.current.off("click",handler); };
+  },[]);
+
+  function handleSearch(q){
+    setSearchQ(q);
+    setSearchResults(q.length>=2?searchWards(q,WARDS):[]);
+  }
+  function handleSearchSelect(w){
+    setSearchResults([]);
+    setSearchQ("");
+    setSelectedWard(w);
+    setPage("ward");
+  }
+  function handleSubmitComplaint(c){
+    const updated=[c,...complaints];
+    setComplaints(updated);
+    saveComplaints(updated);
+    // Check for new cluster
+    const newClusters=detectClusters(updated);
+    if(newClusters.length>0){
+      setAlertText("🚨 "+newClusters[0].alert_message);
+      setAlertVisible(true);
+    }
+  }
+  function saveApiKey(){
+    localStorage.setItem(API_KEY_STORAGE,keyInput);
+    setApiKey(keyInput);
+    setShowKeyInput(false);
+    setKeyInput("");
+  }
+  function handleReportFromWard(ward){
+    setShowModal(true);
+  }
+
+  const openComplaints=complaints.filter(c=>c.status==="open").length;
+  const resolvedToday=complaints.filter(c=>c.status==="resolved"&&new Date(c.timestamp).toDateString()===new Date().toDateString()).length;
+  const topWards=WARDS.slice(0,3);
+
+  return (
+    <>
+      {/* ── NAV ── */}
+      <nav className="nav">
+        <a className="nav-logo" href="#" onClick={e=>{e.preventDefault();setPage("map");}}>
+          <div className="nav-logo-mark">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+              <circle cx="12" cy="9" r="2.5"/>
+            </svg>
+          </div>
+          <div className="nav-logo-text">
+            <h1>PrajaPulse</h1>
+            <small>ಪ್ರಜಾ ಪಲ್ಸ್</small>
+          </div>
+        </a>
+
+        <div className="nav-search">
+          <svg className="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input value={searchQ} onChange={e=>handleSearch(e.target.value)}
+            placeholder="Search ward, area, or pincode…" />
+          {searchResults.length>0 && (
+            <div className="search-dropdown">
+              {searchResults.map(w=>(
+                <div key={w.ward_number} className="search-result-item" onClick={()=>handleSearchSelect(w)}>
+                  <span style={{fontSize:16}}>🏘️</span>
+                  <div>
+                    <div style={{fontWeight:600,fontSize:13}}>Ward {w.ward_number} — {w.ward_name}</div>
+                    <div style={{fontSize:11,color:"var(--muted)"}}>
+                      {w.mla} &nbsp;·&nbsp; {w.pincode} &nbsp;·&nbsp;
+                      <span style={{color:scoreHex(w.score),fontWeight:700}}>{w.score}/100</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="nav-actions">
+          <span className={`nav-tab ${page==="map"?"active":""}`} onClick={()=>setPage("map")}>Map</span>
+          <span className={`nav-tab ${page==="wards"?"active":""}`} onClick={()=>setPage("wards")}>Wards</span>
+          {apiKey?
+            <button className="btn btn-ghost" style={{fontSize:11}} onClick={()=>{setApiKey("");localStorage.removeItem(API_KEY_STORAGE);}}>🔑 Key set</button>:
+            <button className="btn btn-ghost" style={{fontSize:11,borderColor:"var(--amber)",color:"#BA7517"}} onClick={()=>setShowKeyInput(v=>!v)}>+ Add API Key</button>
+          }
+          <button className="btn btn-primary" onClick={()=>setShowModal(true)}>+ Report Issue</button>
+        </div>
+      </nav>
+
+      {/* Key input row */}
+      {showKeyInput && (
+        <div style={{position:"fixed",top:"var(--nav-h)",left:0,right:0,zIndex:950,background:"#1a1916",padding:"10px 20px",borderBottom:"1.5px solid #333"}}>
+          <div style={{maxWidth:600,margin:"0 auto",display:"flex",gap:8,alignItems:"center"}}>
+            <span style={{color:"#aaa",fontSize:12,whiteSpace:"nowrap"}}>Anthropic API Key:</span>
+            <input className="form-control" type="password" placeholder="sk-ant-..." value={keyInput}
+              onChange={e=>setKeyInput(e.target.value)}
+              style={{flex:1,background:"#111",color:"#fff",border:"1.5px solid #333",height:34}}/>
+            <button className="btn" style={{background:"var(--green)",color:"#fff"}} onClick={saveApiKey}>Save</button>
+            <button className="btn btn-ghost" onClick={()=>setShowKeyInput(false)}>Cancel</button>
+          </div>
+          <div style={{color:"#666",fontSize:10,marginTop:4,maxWidth:600,margin:"4px auto 0"}}>
+            Key stored in your browser only. Never sent anywhere except api.anthropic.com for classification.
+          </div>
+        </div>
+      )}
+
+      {/* ── ALERT BANNER ── */}
+      <div className={`alert-banner ${alertVisible?"visible":""}`}>
+        <div className="alert-pulse"/>
+        {alertText}
+        <button className="alert-close" onClick={()=>setAlertVisible(false)}>✕</button>
+      </div>
+
+      {/* ── MAIN ── */}
+      {page==="map" && (
+        <div className="app-body" style={{paddingTop:`calc(var(--nav-h) + ${alertVisible?"44px":"0px"} + ${showKeyInput?"56px":"0px"})`}}>
+          {/* Sidebar */}
+          <aside className="sidebar">
+            {/* Stats */}
+            <div className="stats-row">
+              <div className="stat-card">
+                <div className="stat-num" style={{color:"var(--red)"}}>{openComplaints}</div>
+                <div className="stat-label">Open Complaints</div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-num" style={{color:"var(--amber)"}}>{clusters.length}</div>
+                <div className="stat-label">Clusters Detected</div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-num" style={{color:"var(--green)"}}>{WARDS.length}</div>
+                <div className="stat-label">Wards Covered</div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-num">{resolvedToday}</div>
+                <div className="stat-label">Resolved Today</div>
+              </div>
+            </div>
+
+            {/* Filters */}
+            <div className="sidebar-section">
+              <div className="sidebar-title">Filter by Category</div>
+              <div className="filter-pills">
+                {["all","water","roads","power","garbage","resolved"].map(f=>(
+                  <span key={f} className={`pill pill-${f} ${filter===f?"active":""}`} onClick={()=>setFilter(f)}>
+                    {f==="all"?"All":`${catIcon(f)} ${f.charAt(0).toUpperCase()+f.slice(1)}`}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* MLA Scorecards */}
+            <div className="sidebar-section">
+              <div className="sidebar-title">MLA Scorecards</div>
+              {topWards.map(w=>(
+                <MLACard key={w.ward_number} ward={w} onClick={w=>{setSelectedWard(w);setPage("ward");}}/>
+              ))}
+              <button onClick={()=>setPage("wards")} style={{width:"100%",padding:"8px",borderRadius:8,border:"1.5px dashed var(--border)",background:"none",cursor:"pointer",color:"var(--muted)",fontSize:12,marginTop:4}}>
+                View all {WARDS.length} ward scorecards →
+              </button>
+            </div>
+
+            {/* Clusters */}
+            {clusters.length>0 && (
+              <div className="sidebar-section">
+                <div className="sidebar-title">🔴 Active Clusters</div>
+                {clusters.map((cl,i)=>(
+                  <div key={i} style={{background:"#fff5f5",border:"1.5px solid #ffcdd2",borderRadius:8,padding:"10px 12px",marginBottom:8}}>
+                    <div style={{fontWeight:700,fontSize:13,color:"var(--red)"}}>{catIcon(cl.category)} {cl.count} {cl.category} complaints</div>
+                    <div style={{fontSize:11.5,color:"var(--muted)",marginTop:3}}>{cl.alert_message}</div>
+                    <div style={{fontSize:11,color:"var(--red)",marginTop:4,fontWeight:600}}>→ {cl.authority} auto-notified</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Live Feed */}
+            <div className="sidebar-section">
+              <div className="sidebar-title">Live Feed</div>
+              {complaints.slice(0,6).map(c=>(
+                <div key={c.id} className="feed-item">
+                  <div className="feed-dot" style={{background:catColor(c.category)}}/>
+                  <div style={{flex:1}}>
+                    <div className="feed-text">{c.text.substring(0,70)}…</div>
+                    <div className="feed-meta" style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap",marginTop:3}}>
+                      <span>{c.ward_name}</span>
+                      <span>·</span>
+                      <span>{timeAgo(c.timestamp)}</span>
+                      <span>·</span>
+                      <span className="cat-badge" style={{background:catBg(c.category),color:catColor(c.category)}}>{c.category}</span>
+                      {c.status==="disputed" && <span className="disputed-badge">disputed</span>}
+                      <button
+                        className={`upvote-btn ${votedIds.includes(c.id)?"voted":""}`}
+                        onClick={()=>handleUpvote(c.id)}
+                        title={votedIds.includes(c.id)?"Click to remove your vote":"Upvote this issue"}
+                        style={{marginLeft:"auto"}}
+                      >
+                        ▲ {c.upvotes}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Why PrajaPulse — pinned to bottom */}
+            <div className="why-panel">
+              <div className="why-panel-title">Why PrajaPulse</div>
+              <div className="why-row"><span className="why-check">✓</span><span>MLA accountability with live score</span></div>
+              <div className="why-row"><span className="why-check">✓</span><span>Water, roads, power & garbage — all in one</span></div>
+              <div className="why-row"><span className="why-check">✓</span><span>AI classifier supports Kannada & Hinglish</span></div>
+              <div className="why-row"><span className="why-check">✓</span><span>Auto-cluster detection, authority alerted</span></div>
+              <div className="tagline">"Your ward. Your voice. Their score."</div>
+            </div>
+          </aside>
+
+          {/* Map */}
+          <div className="map-area">
+            <div id="map"/>
+            {showLegend && (
+              <div className="map-legend">
+                <div className="legend-title">Ward Health Score</div>
+                <div className="legend-row"><div className="legend-swatch" style={{background:"#1D9E75"}}/><span>71–100 · Good</span></div>
+                <div className="legend-row"><div className="legend-swatch" style={{background:"#BA7517"}}/><span>41–70 · Needs work</span></div>
+                <div className="legend-row"><div className="legend-swatch" style={{background:"#C0392B"}}/><span>0–40 · Poor</span></div>
+              </div>
+            )}
+          </div>
+
+          {/* Complaint Detail Panel */}
+          {selectedComplaint && (
+            <ComplaintDetailPanel
+              complaint={complaints.find(c=>c.id===selectedComplaint.id)||selectedComplaint}
+              onClose={()=>setSelectedComplaint(null)}
+              onUpvote={handleUpvote}
+              votedIds={votedIds}
+            />
+          )}
+        </div>
+      )}
+
+      {/* ── WARD PAGE ── */}
+      {page==="ward" && selectedWard && (
+        <WardPage
+          ward={selectedWard}
+          complaints={complaints}
+          onBack={()=>setPage("map")}
+          onReport={handleReportFromWard}
+          onUpvote={handleUpvote}
+          votedIds={votedIds}
+        />
+      )}
+
+      {/* ── WARDS PAGE ── */}
+      {page==="wards" && (
+        <WardsPage
+          complaints={complaints}
+          onBack={()=>setPage("map")}
+          onSelectWard={w=>{setSelectedWard(w);setPage("ward");}}
+        />
+      )}
+
+      {/* FAB */}
+      {page==="map" && (
+        <button className="fab" onClick={()=>setShowModal(true)} title="Report Issue">+</button>
+      )}
+
+      {/* MODAL */}
+      {showModal && (
+        <ComplaintModal
+          apiKey={apiKey}
+          onClose={()=>setShowModal(false)}
+          onSubmit={c=>{handleSubmitComplaint(c);setShowModal(false);}}
+        />
+      )}
+
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
